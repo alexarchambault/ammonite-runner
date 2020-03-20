@@ -23,6 +23,7 @@ val scala212 = "2.12.11"
 val scala211 = "2.11.12"
 
 lazy val shared = Def.settings(
+  sonatypeProfileName := "io.github.alexarchambault",
   scalaVersion := scala213,
   crossScalaVersions := Seq(scala213, scala212), // scala211
   libraryDependencies ++= {
@@ -60,6 +61,7 @@ lazy val cli = project
     graalVMNativeImageOptions += "--no-server"
   )
 
+shared
 skip.in(publish) := true
 scalaVersion := scala213
 crossScalaVersions := Nil
