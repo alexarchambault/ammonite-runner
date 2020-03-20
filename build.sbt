@@ -24,7 +24,7 @@ val scala211 = "2.11.12"
 
 lazy val shared = Def.settings(
   scalaVersion := scala213,
-  crossScalaVersions := Seq(scala213, scala212, scala211),
+  crossScalaVersions := Seq(scala213, scala212), // scala211
   libraryDependencies ++= {
     if (isAtLeastScala213.value) Nil
     else Seq(compilerPlugin(Deps.macroParadise))
