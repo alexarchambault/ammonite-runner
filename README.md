@@ -41,7 +41,7 @@ val retCode: Int = proc.waitFor()
 
 Example of use
 ```
-$ cs launch io.github.alexarchambault::ammonite-runner-cli:latest.release -- script.sc
+$ cs launch io.github.alexarchambault.ammonite::ammonite-runner-cli:latest.release -- script.sc
 ```
 
 ## License
