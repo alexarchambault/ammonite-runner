@@ -17,6 +17,7 @@ object Mima {
       .filter(_.startsWith("v"))
       .map(_.stripPrefix("v"))
       .filter(stable)
+      .filter(!_.startsWith("0.1."))
       .toSet
 
 }

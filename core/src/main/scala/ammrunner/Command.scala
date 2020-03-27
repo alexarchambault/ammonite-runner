@@ -1,13 +1,34 @@
 package ammrunner
 
 import java.io.File
-import java.lang.reflect.{InvocationTargetException, Modifier}
 import java.net.URLClassLoader
+import java.lang.reflect.{InvocationTargetException, Modifier}
 import java.util.Locale
+
+import dataclass.data
 
 import scala.annotation.tailrec
 
-object Launch {
+@data class Command(
+  classPath: Seq[File],
+  mainClass: String,
+  args: Seq[String] = Nil
+) {
+  import Command._
+
+  def runBg(): Process =
+    runBg(identity)
+  def runBg(mapBuilder: ProcessBuilder => ProcessBuilder): Process =
+    Jvm.fork(classPath, mainClass, args, mapBuilder)
+
+  def exec(): Unit =
+    if (isNativeImage)
+      Graalvm.launch(classPath, mainClass, args)
+    else
+      Jvm.launch(classPath, mainClass, args)
+}
+
+object Command {
 
   def javaPath: String = {
     // No evecvp in com.oracle.svm.core.posix.headers.Unistd, so we're handling the path lookup logic ourselves
@@ -116,25 +137,4 @@ object Launch {
     }
   }
 
-  def launch(classpath: Seq[File], mainClass: String, args: Seq[String]): Unit =
-    launch(classpath, mainClass, args, fork = false)
-
-  def launch(classpath: Seq[File], mainClass: String, args: Seq[String], fork: Boolean): Unit =
-    if (fork) {
-      val proc = Jvm.fork(classpath, mainClass, args, identity)
-      val retCode = proc.waitFor()
-      if (retCode != 0)
-        sys.exit(retCode)
-    } else if (isNativeImage)
-      Graalvm.launch(classpath, mainClass, args)
-    else
-      Jvm.launch(classpath, mainClass, args)
-
-  def launchBg(
-    classpath: Seq[File],
-    mainClass: String,
-    args: Array[String],
-    mapBuilder: ProcessBuilder => ProcessBuilder
-  ): Process =
-    Jvm.fork(classpath, mainClass, args, mapBuilder)
 }
