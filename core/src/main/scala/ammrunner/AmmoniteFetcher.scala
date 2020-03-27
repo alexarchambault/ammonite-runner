@@ -75,6 +75,7 @@ import scala.io.{BufferedSource, Codec}
           .addDependencies(mainDep)
           .withFetchCacheIKnowWhatImDoing(file)
         maybeResult(fetcher)
+          .right
           .map(res => Command(res.getFiles.asScala.toVector, mainClass))
 
       case None =>
@@ -83,22 +84,24 @@ import scala.io.{BufferedSource, Codec}
           .addDependencies(apiDep)
 
         for {
-          apiRes <- maybeResult(apiFetcher)
-          apiDepVersions = apiRes
-            .getDependencies
-            .asScala
-            .toVector
-            .map(dep => dep.getModule -> dep.getVersion)
-          fetcher = {
-            val fetcher0 = createFetcher()
-              .addDependencies(mainDep)
-            fetcher0
-              .withResolutionParams(
-                fetcher0.getResolutionParams
-                  .forceVersions(apiDepVersions.toMap.asJava)
-              )
+          apiRes <- maybeResult(apiFetcher).right
+          res <- {
+            val apiDepVersions = apiRes
+              .getDependencies
+              .asScala
+              .toVector
+              .map(dep => dep.getModule -> dep.getVersion)
+            val fetcher = {
+              val fetcher0 = createFetcher()
+                .addDependencies(mainDep)
+              fetcher0
+                .withResolutionParams(
+                  fetcher0.getResolutionParams
+                    .forceVersions(apiDepVersions.toMap.asJava)
+                )
+            }
+            maybeResult(fetcher).right
           }
-          res <- maybeResult(fetcher)
         } yield {
           val apiUrls = apiRes.getArtifacts.asScala.toVector.map(_.getKey.getUrl)
           val mainUrls = res.getArtifacts.asScala.toVector.map(_.getKey.getUrl).filterNot(apiUrls.toSet)

@@ -25,11 +25,12 @@ val scala211 = "2.11.12"
 lazy val shared = Def.settings(
   sonatypeProfileName := "io.github.alexarchambault",
   scalaVersion := scala213,
-  crossScalaVersions := Seq(scala213, scala212), // scala211
+  crossScalaVersions := Seq(scala213, scala212, scala211),
   libraryDependencies ++= {
     if (isAtLeastScala213.value) Nil
     else Seq(compilerPlugin(Deps.macroParadise))
   },
+  scalacOptions += "-target:jvm-1.8",
   scalacOptions ++= {
     if (isAtLeastScala213.value) Seq("-Ymacro-annotations")
     else Nil
@@ -65,6 +66,7 @@ lazy val cli = project
   .settings(
     name := "ammonite-runner-cli",
     shared,
+    crossScalaVersions := crossScalaVersions.value.filter(!_.startsWith("2.11.")),
     libraryDependencies += Deps.caseApp,
     graalVMNativeImageOptions += "--no-server"
   )
