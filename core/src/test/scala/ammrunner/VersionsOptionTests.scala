@@ -2,7 +2,7 @@ package ammrunner
 
 import utest._
 
-object AmmRunnerTests extends TestSuite {
+object VersionsOptionTests extends TestSuite {
 
   val tests = Tests {
 
@@ -13,7 +13,7 @@ object AmmRunnerTests extends TestSuite {
           |val n = 2
           |""".stripMargin
 
-      val result = AmmRunner.versions(content.linesIterator)
+      val result = VersionsOption.fromScript(content.linesIterator)
       val expected = VersionsOption(Some("4.1.2"), Some("2.14.3"))
 
       assert(result == expected)
@@ -26,7 +26,7 @@ object AmmRunnerTests extends TestSuite {
           |val n = 2
           |""".stripMargin
 
-      val result = AmmRunner.versions(content.linesIterator)
+      val result = VersionsOption.fromScript(content.linesIterator)
       val expected = VersionsOption(None, Some("2.14.3"))
 
       assert(result == expected)
@@ -39,7 +39,7 @@ object AmmRunnerTests extends TestSuite {
           |val n = 2
           |""".stripMargin
 
-      val result = AmmRunner.versions(content.linesIterator)
+      val result = VersionsOption.fromScript(content.linesIterator)
       val expected = VersionsOption(Some("4.4.3"), None)
 
       assert(result == expected)
@@ -51,7 +51,7 @@ object AmmRunnerTests extends TestSuite {
           |val n = 2
           |""".stripMargin
 
-      val result = AmmRunner.versions(content.linesIterator)
+      val result = VersionsOption.fromScript(content.linesIterator)
       val expected = VersionsOption(None, None)
 
       assert(result == expected)
