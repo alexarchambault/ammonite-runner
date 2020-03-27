@@ -19,7 +19,8 @@ import scala.io.{BufferedSource, Codec}
   tmpDir: Option[Path] = None,
   deleteTmpFile: Boolean = true,
   fetchSources: Boolean = true,
-  progressBars: Boolean = true
+  progressBars: Boolean = true,
+  transformFetch: Option[coursierapi.Fetch => coursierapi.Fetch] = None
 ) {
 
   def command(): Either[AmmoniteFetcherException, Command] = {
@@ -56,7 +57,7 @@ import scala.io.{BufferedSource, Codec}
         .withMainArtifacts()
       if (fetchSources)
         fetch.addClassifiers("sources")
-      fetch
+      transformFetch.fold(fetch)(_(fetch))
     }
 
     def maybeResult(fetcher: Fetch) =
