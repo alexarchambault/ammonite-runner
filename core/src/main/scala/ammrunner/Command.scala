@@ -30,22 +30,36 @@ import scala.annotation.tailrec
 
 object Command {
 
+  private lazy val isWindows: Boolean =
+    Option(System.getProperty("os.name"))
+      .map(_.toLowerCase(Locale.ROOT))
+      .exists(_.contains("windows"))
+
+  private lazy val windowsPathExtensions =
+    Option(System.getenv("pathext"))
+      .toSeq
+      .flatMap(_.split(File.pathSeparator).toSeq)
+
   def javaPath: String = {
     // No evecvp in com.oracle.svm.core.posix.headers.Unistd, so we're handling the path lookup logic ourselves
-    val pathDirs = sys.env.get("PATH")
-      .orElse(sys.env.find(_._1.toLowerCase(Locale.ROOT) == "path").map(_._2))
+
+    val pathDirs = Option(System.getenv("PATH"))
       .toSeq
       .flatMap(_.split(File.pathSeparatorChar))
-    pathDirs
-      .iterator
-      .map(dir => new File(new File(dir), "java")) // FIXME java.exe on Windows
-      .filter(_.exists())
-      .toStream
-      .headOption
-      .map(_.getAbsolutePath)
-      .getOrElse {
-        ???
-      }
+    val pathExtensions =
+      if (isWindows) windowsPathExtensions else Seq("")
+
+    val it = for {
+      dir <- pathDirs.iterator
+      ext <- pathExtensions.iterator
+      file = new File(new File(dir), "java" + ext)
+      if file.exists()
+    } yield file
+
+    if (it.hasNext)
+      it.next().getAbsolutePath
+    else
+      throw new Exception("java executable not found")
   }
 
   def isNativeImage: Boolean =
