@@ -6,7 +6,7 @@ import java.nio.file.{Files, Path}
 
 import coursierapi.{Cache, Dependency, Fetch, Logger, ResolutionParams}
 import coursier.launcher.{BootstrapGenerator, ClassLoaderContent, ClassPathEntry}
-import dataclass.data
+import dataclass._
 
 import scala.collection.JavaConverters._
 import scala.io.{BufferedSource, Codec}
@@ -20,8 +20,13 @@ import scala.io.{BufferedSource, Codec}
   deleteTmpFile: Boolean = true,
   fetchSources: Boolean = true,
   progressBars: Boolean = true,
-  transformFetch: Option[coursierapi.Fetch => coursierapi.Fetch] = None
+  transformFetch: Option[coursierapi.Fetch => coursierapi.Fetch] = None,
+  @since
+  thin: Boolean = true
 ) {
+
+  def withTmpDir(tmpDir: Path): AmmoniteFetcher =
+    withTmpDir(Some(tmpDir))
 
   def command(): Either[AmmoniteFetcherException, Command] = {
 
@@ -70,71 +75,69 @@ import scala.io.{BufferedSource, Codec}
 
     val mainClass = "ammonite.Main" // Get from META-INF/MANIFEST… if it's there?
 
-    fetchCacheIKnowWhatImDoing match {
-      case Some(file) =>
-        val fetcher = createFetcher()
-          .addDependencies(mainDep)
-          .withFetchCacheIKnowWhatImDoing(file)
-        maybeResult(fetcher)
-          .right
-          .map(res => Command(res.getFiles.asScala.toVector, mainClass))
+    if (fetchCacheIKnowWhatImDoing.nonEmpty || !thin) {
+      val fetcher = createFetcher()
+        .addDependencies(mainDep)
+        .withFetchCacheIKnowWhatImDoing(fetchCacheIKnowWhatImDoing.orNull)
+      maybeResult(fetcher)
+        .right
+        .map(res => Command(res.getFiles.asScala.toVector, mainClass))
+    } else {
 
-      case None =>
+      val apiFetcher = createFetcher()
+        .addDependencies(apiDep)
 
-        val apiFetcher = createFetcher()
-          .addDependencies(apiDep)
-
-        for {
-          apiRes <- maybeResult(apiFetcher).right
-          res <- {
-            val apiDepVersions = apiRes
-              .getDependencies
-              .asScala
-              .toVector
-              .map(dep => dep.getModule -> dep.getVersion)
-            val fetcher = {
-              val fetcher0 = createFetcher()
-                .addDependencies(mainDep)
-              fetcher0
-                .withResolutionParams(
-                  fetcher0.getResolutionParams
-                    .forceVersions(apiDepVersions.toMap.asJava)
-                )
-            }
-            maybeResult(fetcher).right
+      for {
+        apiRes <- maybeResult(apiFetcher).right
+        res <- {
+          val apiDepVersions = apiRes
+            .getDependencies
+            .asScala
+            .toVector
+            .map(dep => dep.getModule -> dep.getVersion)
+          val fetcher = {
+            val fetcher0 = createFetcher()
+              .addDependencies(mainDep)
+            fetcher0
+              .withResolutionParams(
+                fetcher0.getResolutionParams
+                  .forceVersions(apiDepVersions.toMap.asJava)
+              )
           }
-        } yield {
-          val apiUrls = apiRes.getArtifacts.asScala.toVector.map(_.getKey.getUrl)
-          val mainUrls = res.getArtifacts.asScala.toVector.map(_.getKey.getUrl).filterNot(apiUrls.toSet)
-          val sharedContent = ClassLoaderContent(apiUrls.map(u => ClassPathEntry.Url(u)))
-          val mainContent = ClassLoaderContent(mainUrls.map(u => ClassPathEntry.Url(u)))
-          val params = coursier.launcher.Parameters.Bootstrap(Seq(sharedContent, mainContent), mainClass)
-            .withDeterministic(true)
-            .withPreambleOpt(None)
-          val tmpFile = {
-            val prefix = "ammonite-" + versions.ammoniteVersion
-            val suffix = ".jar"
-            tmpDir match {
-              case None => Files.createTempFile(prefix, suffix)
-              case Some(tmpDir0) => Files.createTempFile(tmpDir0, prefix, suffix)
-            }
-          }
-          if (deleteTmpFile)
-            Runtime.getRuntime.addShutdownHook(
-              new Thread {
-                setDaemon(true)
-                override def run(): Unit =
-                  Files.deleteIfExists(tmpFile)
-              }
-            )
-          BootstrapGenerator.generate(params, tmpFile)
-
-          Command(
-            Seq(tmpFile.toFile),
-            // FIXME Get mainClass from coursier-launcher lib
-            "coursier.bootstrap.launcher.Launcher"
-          )
+          maybeResult(fetcher).right
         }
+      } yield {
+        val apiUrls = apiRes.getArtifacts.asScala.toVector.map(_.getKey.getUrl)
+        val mainUrls = res.getArtifacts.asScala.toVector.map(_.getKey.getUrl).filterNot(apiUrls.toSet)
+        val sharedContent = ClassLoaderContent(apiUrls.map(u => ClassPathEntry.Url(u)))
+        val mainContent = ClassLoaderContent(mainUrls.map(u => ClassPathEntry.Url(u)))
+        val params = coursier.launcher.Parameters.Bootstrap(Seq(sharedContent, mainContent), mainClass)
+          .withDeterministic(true)
+          .withPreambleOpt(None)
+        val tmpFile = {
+          val prefix = "ammonite-" + versions.ammoniteVersion
+          val suffix = ".jar"
+          tmpDir match {
+            case None => Files.createTempFile(prefix, suffix)
+            case Some(tmpDir0) => Files.createTempFile(tmpDir0, prefix, suffix)
+          }
+        }
+        if (deleteTmpFile)
+          Runtime.getRuntime.addShutdownHook(
+            new Thread {
+              setDaemon(true)
+              override def run(): Unit =
+                Files.deleteIfExists(tmpFile)
+            }
+          )
+        BootstrapGenerator.generate(params, tmpFile)
+
+        Command(
+          Seq(tmpFile.toFile),
+          // FIXME Get mainClass from coursier-launcher lib
+          "coursier.bootstrap.launcher.Launcher"
+        )
+      }
     }
   }
 
