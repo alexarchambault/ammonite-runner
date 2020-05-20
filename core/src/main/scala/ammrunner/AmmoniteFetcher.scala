@@ -2,7 +2,7 @@ package ammrunner
 
 import java.io.{File, InputStream, OutputStream}
 import java.nio.charset.{Charset, StandardCharsets}
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, FileSystemException, Path}
 
 import coursierapi.{Cache, Dependency, Fetch, Logger, ResolutionParams}
 import coursier.launcher.{BootstrapGenerator, ClassLoaderContent, ClassPathEntry}
@@ -127,7 +127,11 @@ import scala.io.{BufferedSource, Codec}
             new Thread {
               setDaemon(true)
               override def run(): Unit =
-                Files.deleteIfExists(tmpFile)
+                try Files.deleteIfExists(tmpFile)
+                catch {
+                  case e: FileSystemException if Command.isWindows =>
+                    System.err.println(s"Error deleting $tmpFile: $e")
+                }
             }
           )
         BootstrapGenerator.generate(params, tmpFile)

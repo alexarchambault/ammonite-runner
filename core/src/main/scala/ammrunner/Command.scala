@@ -30,7 +30,7 @@ import scala.annotation.tailrec
 
 object Command {
 
-  private lazy val isWindows: Boolean =
+  private[ammrunner] lazy val isWindows: Boolean =
     Option(System.getProperty("os.name"))
       .map(_.toLowerCase(Locale.ROOT))
       .exists(_.contains("windows"))
