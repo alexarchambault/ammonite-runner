@@ -2,7 +2,7 @@ language: scala
 jdk: openjdk8
 git:
   depth: false
-script: sbt "++${TRAVIS_SCALA_VERSION} test" "++${TRAVIS_SCALA_VERSION} mimaReportBinaryIssues"
+script: sbt "++${TRAVIS_SCALA_VERSION} test" "++${TRAVIS_SCALA_VERSION} compatibilityCheck"
 cache:
   directories:
   - $HOME/.cache

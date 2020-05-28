@@ -49,14 +49,7 @@ lazy val core = project
       Deps.svm % Provided,
       Deps.utest.value % Test
     ),
-    testFrameworks += new TestFramework("utest.runner.Framework"),
-    MimaPlugin.autoImport.mimaPreviousArtifacts := {
-      Mima.binaryCompatibilityVersions
-        .map { ver =>
-          (organization.value % moduleName.value % ver)
-            .cross(crossVersion.value)
-        }
-    }
+    testFrameworks += new TestFramework("utest.runner.Framework")
   )
 
 lazy val cli = project
