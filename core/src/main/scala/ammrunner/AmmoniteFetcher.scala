@@ -130,7 +130,7 @@ import scala.io.{BufferedSource, Codec}
                 try Files.deleteIfExists(tmpFile)
                 catch {
                   case e: FileSystemException if Command.isWindows =>
-                    System.err.println(s"Error deleting $tmpFile: $e")
+                    System.err.println(s"Ignored error while deleting temporary file $tmpFile: $e")
                 }
             }
           )
