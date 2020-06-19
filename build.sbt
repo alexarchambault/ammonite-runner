@@ -49,7 +49,15 @@ lazy val core = project
       Deps.svm % Provided,
       Deps.utest.value % Test
     ),
-    testFrameworks += new TestFramework("utest.runner.Framework")
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    mimaBinaryIssueFilters ++= {
+      import com.typesafe.tools.mima.core._
+      Seq(
+        // private methods
+        ProblemFilters.exclude[DirectMissingMethodProblem]("ammrunner.Command#Graalvm.launch"),
+        ProblemFilters.exclude[DirectMissingMethodProblem]("ammrunner.Command#Jvm.fork")
+      )
+    }
   )
 
 lazy val cli = project
