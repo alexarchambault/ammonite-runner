@@ -5,25 +5,32 @@ import java.net.URLClassLoader
 import java.lang.reflect.{InvocationTargetException, Modifier}
 import java.util.Locale
 
-import dataclass.data
+import dataclass._
 
 import scala.annotation.tailrec
 
 @data class Command(
   classPath: Seq[File],
   mainClass: String,
-  args: Seq[String] = Nil
+  args: Seq[String] = Nil,
+  @since("0.2.6")
+  jvmArgs: Option[Seq[String]] = None
 ) {
   import Command._
 
   def runBg(): Process =
     runBg(identity)
   def runBg(mapBuilder: ProcessBuilder => ProcessBuilder): Process =
-    Jvm.fork(classPath, mainClass, args, mapBuilder)
+    Jvm.fork(jvmArgs.getOrElse(Nil), classPath, mainClass, args, mapBuilder)
+
+  def withJvmArgs(args: Seq[String]): Command =
+    withJvmArgs(Some(args))
+  def addJvmArgs(args: String*): Command =
+    withJvmArgs(Some(jvmArgs.getOrElse(Seq.empty[String]) ++ args))
 
   def exec(): Unit =
     if (isNativeImage)
-      Graalvm.launch(classPath, mainClass, args)
+      Graalvm.launch(jvmArgs.getOrElse(Nil), classPath, mainClass, args)
     else
       Jvm.launch(classPath, mainClass, args)
 }
@@ -87,12 +94,19 @@ object Command {
       throw new Exception(s"Error running $argc ${argv.mkString(" ")}: $desc")
     }
 
-    def launch(classpath: Seq[File], mainClass: String, args: Seq[String]): Unit = {
-      val args0 = Seq(
-        "java", // not actually used
-        "-cp", classpath.map(_.getAbsolutePath).mkString(File.pathSeparator),
-        mainClass
-      ) ++ args
+    def launch(
+      jvmArgs: Seq[String],
+      classpath: Seq[File],
+      mainClass: String,
+      args: Seq[String]
+    ): Unit = {
+      val args0 = Seq("java") ++ // not actually used
+        jvmArgs ++
+        Seq(
+          "-cp", classpath.map(_.getAbsolutePath).mkString(File.pathSeparator),
+          mainClass
+        ) ++
+        args
       execv(javaPath, args0)
     }
   }
@@ -136,16 +150,19 @@ object Command {
     }
 
     def fork(
+      jvmArgs: Seq[String],
       classpath: Seq[File],
       mainClass: String,
       args: Seq[String],
       mapBuilder: ProcessBuilder => ProcessBuilder
     ): Process = {
-      val cmd = Seq(
-        javaPath,
-        "-cp", classpath.map(_.getAbsolutePath).mkString(File.pathSeparator),
-        mainClass
-      ) ++ args
+      val cmd = Seq(javaPath) ++
+        jvmArgs ++
+        Seq(
+          "-cp", classpath.map(_.getAbsolutePath).mkString(File.pathSeparator),
+          mainClass
+        ) ++
+        args
       val builder = mapBuilder(new ProcessBuilder(cmd: _*).inheritIO())
       builder.start()
     }
