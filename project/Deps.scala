@@ -5,7 +5,7 @@ import sbt.Keys.scalaVersion
 
 object Deps {
 
-  def caseApp = "com.github.alexarchambault" %% "case-app" % "2.0.2"
+  def caseApp = "com.github.alexarchambault" %% "case-app" % "2.0.3"
   def coursierInterface = "io.get-coursier" % "interface" % "0.0.22"
   def coursierLauncher = "io.get-coursier" %% "coursier-launcher" % "2.0.0-RC6-21"
   def dataClass = "io.github.alexarchambault" %% "data-class" % "0.2.3"
