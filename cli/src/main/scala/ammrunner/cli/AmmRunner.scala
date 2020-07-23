@@ -26,7 +26,14 @@ object AmmRunner extends CaseApp[Options] {
       else
         args.all
 
-    val scriptPathOpt = args0.headOption.filter(!_.startsWith("-"))
+    val scriptPathOpt = args0
+      .iterator
+      .filter(!_.startsWith("-"))
+      .filter(_.endsWith(".sc"))
+      .map(new File(_))
+      .filter(_.isFile)
+      .toStream
+      .headOption
 
     def fetcher(versions: Versions) =
       AmmoniteFetcher(versions)
@@ -42,9 +49,7 @@ object AmmRunner extends CaseApp[Options] {
           case Right(cmd) => cmd
         }
 
-      case Some(scriptPath) =>
-        val script = new File(scriptPath)
-
+      case Some(script) =>
         val versions = options.versionsOpt
           .orElse(VersionsOption.fromScript(script))
           .getOrElse(Versions.default())
