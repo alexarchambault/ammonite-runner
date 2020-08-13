@@ -10,7 +10,7 @@ object Deps {
   def coursierLauncher = "io.get-coursier" %% "coursier-launcher" % "2.0.0-RC6-24"
   def dataClass = "io.github.alexarchambault" %% "data-class" % "0.2.3"
   def macroParadise = "org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full
-  def svm = "org.graalvm.nativeimage" % "svm" % "19.3.3"
+  def svm = "org.graalvm.nativeimage" % "svm" % "20.1.0"
   def utest = setting {
     val sv = scalaVersion.value
     val ver =
