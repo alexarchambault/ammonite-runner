@@ -50,12 +50,13 @@ lazy val core = project
       Deps.utest.value % Test
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
-    MimaPlugin.autoImport.mimaPreviousArtifacts := {
-      Mima.binaryCompatibilityVersions
-        .map { ver =>
-          (organization.value % moduleName.value % ver)
-            .cross(crossVersion.value)
-        }
+    mimaBinaryIssueFilters ++= {
+      import com.typesafe.tools.mima.core._
+      Seq(
+        // private methods
+        ProblemFilters.exclude[DirectMissingMethodProblem]("ammrunner.Command#Graalvm.launch"),
+        ProblemFilters.exclude[DirectMissingMethodProblem]("ammrunner.Command#Jvm.fork")
+      )
     }
   )
 
