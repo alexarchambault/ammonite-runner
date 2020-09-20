@@ -3,6 +3,6 @@ addSbtPlugin(("io.github.alexarchambault.sbt" % "sbt-compatibility" % "0.0.8").e
 addSbtPlugin("io.github.alexarchambault.sbt" % "sbt-eviction-rules" % "0.2.0")
 addSbtPlugin("com.github.alexarchambault.tmp" % "sbt-mima-plugin" % "0.7.1-SNAPSHOT")
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.7.5")
-addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.12")
+addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.13")
 
 resolvers += Resolver.sonatypeRepo("snapshots")
