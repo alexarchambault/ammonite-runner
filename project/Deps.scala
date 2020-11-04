@@ -6,11 +6,11 @@ import sbt.Keys.scalaVersion
 object Deps {
 
   def caseApp = "com.github.alexarchambault" %% "case-app" % "2.0.4"
-  def coursierInterface = "io.get-coursier" % "interface" % "0.0.24"
-  def coursierLauncher = "io.get-coursier" %% "coursier-launcher" % "2.0.0-RC6-24"
-  def dataClass = "io.github.alexarchambault" %% "data-class" % "0.2.3"
+  def coursierInterface = "io.get-coursier" % "interface" % "0.0.25"
+  def coursierLauncher = "io.get-coursier" %% "coursier-launcher" % "2.0.6"
+  def dataClass = "io.github.alexarchambault" %% "data-class" % "0.2.4"
   def macroParadise = "org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full
-  def svm = "org.graalvm.nativeimage" % "svm" % "20.2.0"
+  def svm = "org.graalvm.nativeimage" % "svm" % "19.3.4"
   def utest = setting {
     val sv = scalaVersion.value
     val ver =
