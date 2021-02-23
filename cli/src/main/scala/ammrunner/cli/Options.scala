@@ -3,6 +3,7 @@ package ammrunner.cli
 import ammrunner.{Versions, VersionsOption}
 
 import caseapp._
+import caseapp.core.help.Help
 
 final case class Options(
   @ExtraName("V")
@@ -26,4 +27,9 @@ final case class Options(
       versions0 = versions0.withScalaVersion(scala)
     versions0
   }
+}
+
+object Options {
+  implicit val parser = Parser[Options]
+  implicit val help = Help[Options]
 }
