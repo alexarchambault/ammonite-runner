@@ -60,7 +60,7 @@ object AmmRunner extends CaseApp[Options] {
         }
     }
 
-    command.withArgs(args0).exec()
+    command.withArgs(args0).exec(forceFork = options.fork)
   }
 }
 
