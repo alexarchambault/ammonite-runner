@@ -13,7 +13,7 @@ import scala.io.{BufferedSource, Codec}
 
 @data class AmmoniteFetcher(
   versions: Versions,
-  interpOnly: Boolean = true,
+  interpOnly: Boolean = false,
   resolutionParams: ResolutionParams = ResolutionParams.create(),
   fetchCacheIKnowWhatImDoing: Option[File] = None,
   tmpDir: Option[Path] = None,

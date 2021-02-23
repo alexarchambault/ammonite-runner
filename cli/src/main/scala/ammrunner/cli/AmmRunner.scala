@@ -37,7 +37,6 @@ object AmmRunner extends CaseApp[Options] {
 
     def fetcher(versions: Versions) =
       AmmoniteFetcher(versions)
-        .withInterpOnly(false)
 
     val command = scriptPathOpt match {
       case None =>
