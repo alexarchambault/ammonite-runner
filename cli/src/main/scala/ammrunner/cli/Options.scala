@@ -14,7 +14,7 @@ final case class Options(
   @HelpMessage("Force Scala version")
   @ValueDescription("Scala version")
     scala: Option[String] = None,
-  fork: Boolean = false
+  fork: Boolean = Options.defaultFork
 ) {
   def versionsOpt: VersionsOption =
     VersionsOption(amm, scala)
@@ -32,4 +32,11 @@ final case class Options(
 object Options {
   implicit val parser = Parser[Options]
   implicit val help = Help[Options]
+
+  private val defaultFork =
+    // Starting from JDK 9, AppClassLoader gets in the way of isolating
+    // our JARs from those of Ammonite, so we fork by default.
+    scala.util.Try(System.getProperty("java.version").takeWhile(_ != '.').toInt)
+      .toOption
+      .exists(_ >= 9)
 }

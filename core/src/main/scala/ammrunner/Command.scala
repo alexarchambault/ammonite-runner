@@ -123,7 +123,8 @@ object Command {
       @tailrec
       def rootLoader(cl: ClassLoader): ClassLoader = {
         val par = cl.getParent
-        if (par == null)
+        // AppClassLoader thing is required with JDK 11
+        if (par == null || cl.getClass.getName == "jdk.internal.loader.ClassLoaders$AppClassLoader")
           cl
         else
           rootLoader(par)
