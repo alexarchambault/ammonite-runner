@@ -28,10 +28,15 @@ import scala.annotation.tailrec
   def addJvmArgs(args: String*): Command =
     withJvmArgs(Some(jvmArgs.getOrElse(Seq.empty[String]) ++ args))
 
-  def exec(): Unit =
+  def exec(): Unit = exec(forceFork = false)
+  def exec(forceFork: Boolean): Unit =
     if (isNativeImage)
       Graalvm.launch(jvmArgs.getOrElse(Nil), classPath, mainClass, args)
-    else
+    else if (forceFork) {
+      val p = Jvm.fork(Nil, classPath, mainClass, args, identity)
+      val retCode = p.waitFor()
+      sys.exit(retCode)
+    } else
       Jvm.launch(classPath, mainClass, args)
 }
 
@@ -118,7 +123,8 @@ object Command {
       @tailrec
       def rootLoader(cl: ClassLoader): ClassLoader = {
         val par = cl.getParent
-        if (par == null)
+        // AppClassLoader thing is required with JDK 11
+        if (par == null || cl.getClass.getName == "jdk.internal.loader.ClassLoaders$AppClassLoader")
           cl
         else
           rootLoader(par)
