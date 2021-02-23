@@ -30,23 +30,40 @@ import scala.io.{BufferedSource, Codec}
 
   def command(): Either[AmmoniteFetcherException, Command] = {
 
-    val mainDep = Dependency.of(
-      "com.lihaoyi",
-      if (interpOnly)
-        "ammonite-interp_" + versions.scalaVersion
-      else
-        "ammonite_" + versions.scalaVersion,
-      versions.ammoniteVersion
-    )
+    val compilerDeps =
+      if (AmmoniteFetcher.compareVersions("2.3.8-32-64308dc3", versions.ammoniteVersion) <= 0)
+        Seq(
+          Dependency.of(
+            "com.lihaoyi",
+            "ammonite-compiler_" + versions.scalaVersion,
+            versions.ammoniteVersion
+          )
+        )
+      else Nil
 
-    def apiDep = Dependency.of(
-      "com.lihaoyi",
-      if (interpOnly)
-        "ammonite-interp-api_" + versions.scalaVersion
-      else
-        "ammonite-repl-api_" + versions.scalaVersion,
-      versions.ammoniteVersion
-    )
+    val mainDeps = {
+      val main = Dependency.of(
+        "com.lihaoyi",
+        if (interpOnly)
+          "ammonite-interp_" + versions.scalaVersion
+        else
+          "ammonite_" + versions.scalaVersion,
+        versions.ammoniteVersion
+      )
+      Seq(main) ++ (if (interpOnly) compilerDeps else Nil)
+    }
+
+    def apiDeps = {
+      val api = Dependency.of(
+        "com.lihaoyi",
+        if (interpOnly)
+          "ammonite-interp-api_" + versions.scalaVersion
+        else
+          "ammonite-repl-api_" + versions.scalaVersion,
+        versions.ammoniteVersion
+      )
+      Seq(api) ++ compilerDeps
+    }
 
     def createFetcher(): Fetch = {
       val cache = Cache.create()
@@ -77,7 +94,7 @@ import scala.io.{BufferedSource, Codec}
 
     if (fetchCacheIKnowWhatImDoing.nonEmpty || !thin) {
       val fetcher = createFetcher()
-        .addDependencies(mainDep)
+        .addDependencies(mainDeps: _*)
         .withFetchCacheIKnowWhatImDoing(fetchCacheIKnowWhatImDoing.orNull)
       maybeResult(fetcher)
         .right
@@ -85,7 +102,7 @@ import scala.io.{BufferedSource, Codec}
     } else {
 
       val apiFetcher = createFetcher()
-        .addDependencies(apiDep)
+        .addDependencies(apiDeps: _*)
 
       for {
         apiRes <- maybeResult(apiFetcher).right
@@ -97,7 +114,7 @@ import scala.io.{BufferedSource, Codec}
             .map(dep => dep.getModule -> dep.getVersion)
           val fetcher = {
             val fetcher0 = createFetcher()
-              .addDependencies(mainDep)
+              .addDependencies(mainDeps: _*)
             fetcher0
               .withResolutionParams(
                 fetcher0.getResolutionParams
@@ -145,4 +162,25 @@ import scala.io.{BufferedSource, Codec}
     }
   }
 
+}
+
+object AmmoniteFetcher {
+  private val splitter = "[-.]".r
+  // should only work fine for versions whose 4 first "elements" are made of integers,
+  // such as '2.3.8-32-…' or '2.0.4', but not '2.2-M1' or '3.0.0-RC4'.
+  private def compareVersions(a: String, b: String): Int = {
+    def toInt(s: String): Int =
+      if (s.nonEmpty && s.forall(_.isDigit)) s.toInt
+      else Int.MaxValue
+    def itemize(v: String): (Int, Int, Int, Int) =
+      splitter.split(v) match {
+        case Array(a, b, c, d, _*) => (toInt(a), toInt(b), toInt(c), toInt(d))
+        case Array(a, b, c) => (toInt(a), toInt(b), toInt(c), 0)
+        case Array(a, b) => (toInt(a), toInt(b), 0, 0)
+        case Array(a) => (toInt(a), 0, 0, 0)
+        case Array() => (0, 0, 0, 0)
+      }
+    Ordering[(Int, Int, Int, Int)]
+      .compare(itemize(a), itemize(b))
+  }
 }
