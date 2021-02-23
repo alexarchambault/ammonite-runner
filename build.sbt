@@ -68,7 +68,24 @@ lazy val cli = project
     name := "ammonite-runner-cli",
     shared,
     crossScalaVersions := crossScalaVersions.value.filter(!_.startsWith("2.11.")),
-    libraryDependencies += Deps.caseApp,
+    libraryDependencies ++= Seq(
+      Deps.caseApp,
+      Deps.utest.value % Test
+    ),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    fork.in(Test) := true,
+    javaOptions.in(Test) += {
+      val isWindows = System.getProperty("os.name")
+        .toLowerCase(java.util.Locale.ROOT)
+        .contains("windows")
+      val ext = if (isWindows) ".bat" else ""
+      val launcher = pack.in(Compile)
+        .value
+        .getAbsoluteFile
+        ./("bin/amm-runner" + ext)
+        .toString
+      s"-Dammrunner.launcher=$launcher"
+    },
     graalVMNativeImageOptions += "--no-server"
   )
 
