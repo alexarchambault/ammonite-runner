@@ -20,7 +20,7 @@ lazy val isAtLeastScala213 = Def.setting {
 
 val scala213 = "2.13.5"
 val scala212 = "2.12.13"
-val scala211 = "2.11.12"
+val scala211 = "2.13.5"
 
 lazy val shared = Def.settings(
   sonatypeProfileName := "io.github.alexarchambault",
