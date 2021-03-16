@@ -28,10 +28,7 @@ jobs:
       with:
         fetch-depth: 0
         submodules: true
-    - uses: coursier/cache-action@v5
-      with:
-        extraFiles: "[\".github/scripts/*\", \".github/workflows/ci.yml\"]"
-        extraKey: test
+    - uses: coursier/cache-action@v6
     - uses: laughedelic/coursier-setup@v1
       with:
         jvm: 8
@@ -57,10 +54,7 @@ jobs:
       with:
         fetch-depth: 0
         submodules: true
-    - uses: coursier/cache-action@v5
-      with:
-        extraFiles: "[\".github/scripts/*\", \".github/workflows/ci.yml\"]"
-        extraKey: "release"
+    - uses: coursier/cache-action@v6
     - uses: laughedelic/coursier-setup@v1
       with:
         jvm: 8
