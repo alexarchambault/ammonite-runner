@@ -18,8 +18,8 @@ lazy val isAtLeastScala213 = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value).exists(_ >= (2, 13))
 }
 
-val scala213 = "2.13.1"
-val scala212 = "2.12.11"
+val scala213 = "2.13.5"
+val scala212 = "2.12.13"
 val scala211 = "2.11.12"
 
 lazy val shared = Def.settings(
@@ -62,14 +62,32 @@ lazy val core = project
 
 lazy val cli = project
   .dependsOn(core)
-  .enablePlugins(GraalVMNativeImagePlugin, PackPlugin)
+  // .enablePlugins(GraalVMNativeImagePlugin)
+  .enablePlugins(PackPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
     name := "ammonite-runner-cli",
     shared,
     crossScalaVersions := crossScalaVersions.value.filter(!_.startsWith("2.11.")),
-    libraryDependencies += Deps.caseApp,
-    graalVMNativeImageOptions += "--no-server"
+    libraryDependencies ++= Seq(
+      Deps.caseApp,
+      Deps.utest.value % Test
+    ),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    fork.in(Test) := true,
+    javaOptions.in(Test) += {
+      val isWindows = System.getProperty("os.name")
+        .toLowerCase(java.util.Locale.ROOT)
+        .contains("windows")
+      val ext = if (isWindows) ".bat" else ""
+      val launcher = pack.in(Compile)
+        .value
+        .getAbsoluteFile
+        ./("bin/amm-runner" + ext)
+        .toString
+      s"-Dammrunner.launcher=$launcher"
+    },
+    // graalVMNativeImageOptions += "--no-server"
   )
 
 shared

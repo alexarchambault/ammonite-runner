@@ -37,30 +37,23 @@ object AmmRunner extends CaseApp[Options] {
 
     def fetcher(versions: Versions) =
       AmmoniteFetcher(versions)
-        .withInterpOnly(false)
 
-    val command = scriptPathOpt match {
+    val versions = scriptPathOpt match {
       case None =>
-        val versions = options.versionsOpt
+        options.versionsOpt
           .getOrElse(Versions.default())
-
-        fetcher(versions).command() match {
-          case Left(e) => throw new Exception("Error getting Ammonite class path", e)
-          case Right(cmd) => cmd
-        }
 
       case Some(script) =>
-        val versions = options.versionsOpt
+        options.versionsOpt
           .orElse(VersionsOption.fromScript(script))
           .getOrElse(Versions.default())
-
-        fetcher(versions).command() match {
-          case Left(e) => throw new Exception("Error getting Ammonite class path", e)
-          case Right(cmd) => cmd
-        }
+    }
+    val command = fetcher(versions).command() match {
+      case Left(e) => throw new Exception("Error getting Ammonite class path", e)
+      case Right(cmd) => cmd
     }
 
-    command.withArgs(args0).exec()
+    command.withArgs(args0).exec(forceFork = options.fork)
   }
 }
 

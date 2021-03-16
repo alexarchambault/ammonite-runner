@@ -2,6 +2,7 @@ package ammrunner
 
 import java.io.File
 import java.nio.charset.{Charset, StandardCharsets}
+import java.util.Locale
 
 import dataclass.data
 
@@ -58,10 +59,13 @@ object VersionsOption {
       .map(_.stripPrefix("//"))
       .flatMap(_.split(","))
       .map(_.trim)
-      .filter(s => s.startsWith("scala ") || s.startsWith("ammonite "))
+      .filter { s =>
+        val s0 = s.toLowerCase(Locale.ROOT)
+        s0.startsWith("scala ") || s0.startsWith("ammonite ")
+      }
       .map(_.split("\\s+", 2))
       .collect {
-        case Array(k, v) => k -> v
+        case Array(k, v) => k.toLowerCase(Locale.ROOT) -> v
       }
       .toMap
 
