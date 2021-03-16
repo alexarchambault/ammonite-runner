@@ -62,7 +62,8 @@ lazy val core = project
 
 lazy val cli = project
   .dependsOn(core)
-  .enablePlugins(GraalVMNativeImagePlugin, PackPlugin)
+  // .enablePlugins(GraalVMNativeImagePlugin)
+  .enablePlugins(PackPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
     name := "ammonite-runner-cli",
@@ -86,7 +87,7 @@ lazy val cli = project
         .toString
       s"-Dammrunner.launcher=$launcher"
     },
-    graalVMNativeImageOptions += "--no-server"
+    // graalVMNativeImageOptions += "--no-server"
   )
 
 shared
