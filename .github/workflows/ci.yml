@@ -33,7 +33,7 @@ jobs:
       with:
         jvm: 8
         apps: sbt-launcher
-    - run: sbt +test +evictionCheck +compatibilityCheck
+    - run: sbt +test +mimaReportBinaryIssues
       shell: bash
 
   # job whose name doesn't change when we bump Scala versions, add OSes, …

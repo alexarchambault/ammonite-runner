@@ -18,7 +18,7 @@ lazy val isAtLeastScala213 = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value).exists(_ >= (2, 13))
 }
 
-val scala213 = "2.13.5"
+val scala213 = "2.13.6"
 val scala212 = "2.12.13"
 val scala211 = "2.11.12"
 
