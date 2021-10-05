@@ -14,7 +14,7 @@ object Deps {
   def utest = setting {
     val sv = scalaVersion.value
     val ver =
-      if (sv.startsWith("2.11.")) "0.6.8"
+      if (sv.startsWith("2.11.")) "0.7.10"
       else "0.7.7"
     "com.lihaoyi" %% "utest" % ver
   }
