@@ -30,52 +30,12 @@ import scala.io.{BufferedSource, Codec}
 
   def command(): Either[AmmoniteFetcherException, Command] = {
 
-    val compilerDeps =
-      if (AmmoniteFetcher.compareVersions("2.3.8-32-64308dc3", versions.ammoniteVersion) <= 0)
-        Seq(
-          Dependency.of(
-            "com.lihaoyi",
-            "ammonite-compiler_" + versions.scalaVersion,
-            versions.ammoniteVersion
-          )
-        )
-      else Nil
-
-    val mainDeps = {
-      val main = Dependency.of(
-        "com.lihaoyi",
-        if (interpOnly)
-          "ammonite-interp_" + versions.scalaVersion
-        else
-          "ammonite_" + versions.scalaVersion,
-        versions.ammoniteVersion
-      )
-      Seq(main) ++ (if (interpOnly) compilerDeps else Nil)
-    }
-
-    def apiDeps = {
-      val api = Dependency.of(
-        "com.lihaoyi",
-        if (interpOnly)
-          "ammonite-interp-api_" + versions.scalaVersion
-        else
-          "ammonite-repl-api_" + versions.scalaVersion,
-        versions.ammoniteVersion
-      )
-      Seq(api) ++ compilerDeps
-    }
-
     def createFetcher(): Fetch = {
       val cache = Cache.create()
       if (progressBars)
         cache.withLogger(Logger.progressBars())
       val fetch = Fetch.create()
         .withCache(cache)
-        .withResolutionParams(
-          // FIXME This mutates resolutionParams in place
-          resolutionParams
-            .withScalaVersion(versions.scalaVersion)
-        )
         .withMainArtifacts()
       if (fetchSources)
         fetch.addClassifiers("sources")
@@ -89,6 +49,61 @@ import scala.io.{BufferedSource, Codec}
         case e: coursierapi.error.CoursierError =>
           Left(new CoursierError(s"Error fetching Ammonite ${versions.ammoniteVersion} for scala ${versions.scalaVersion}", e))
       }
+
+    lazy val fullDeps = {
+      // ideally, we'd rather only resolve things (that is, get dependency graph via POM files),
+      // instead of fetching JARs too, but the coursier Java API (coursierapi.*) doesn't allow it for now.
+      val res = maybeResult {
+        createFetcher()
+          .addDependencies(Dependency.of("com.lihaoyi", "ammonite_" + versions.scalaVersion, versions.ammoniteVersion))
+      }
+      res.fold(ex => throw ex, identity).getDependencies.asScala.toVector
+    }
+
+    def ammoniteDep(name: String) = {
+      def default = Dependency.of(
+        "com.lihaoyi",
+        s"ammonite-${name}_" + versions.scalaVersion,
+        versions.ammoniteVersion
+      )
+      if (versions.scalaVersion.startsWith("2."))
+        default
+      else {
+        val ammDeps = fullDeps.filter { dep =>
+          val name0 = dep.getModule.getName
+          dep.getModule.getOrganization == "com.lihaoyi" &&
+          name0.startsWith("ammonite-") || name0.startsWith("ammonite_")
+        }
+        ammDeps
+          .find { dep =>
+            dep.getModule.getName.contains(s"-${name}_")
+          }
+          .getOrElse {
+            sys.error(s"Module ammonite-$name not found (available modules: ${ammDeps.sortBy(_.getModule.getName)})")
+          }
+      }
+    }
+
+    val compilerDeps =
+      if (AmmoniteFetcher.compareVersions(versions.ammoniteVersion, "2.3.8-32-64308dc3") < 0)
+        Nil
+      else
+        Seq(ammoniteDep("compiler"))
+
+    val mainDeps =
+      if (interpOnly)
+        Seq(ammoniteDep("interp")) ++ compilerDeps
+      else {
+        val main = Dependency.of(
+          "com.lihaoyi",
+          "ammonite_" + versions.scalaVersion,
+          versions.ammoniteVersion
+        )
+        Seq(main)
+      }
+
+    def apiDeps =
+      Seq(ammoniteDep(if (interpOnly) "interp-api" else "repl-api")) ++ compilerDeps
 
     val mainClass = "ammonite.Main" // Get from META-INF/MANIFEST… if it's there?
 

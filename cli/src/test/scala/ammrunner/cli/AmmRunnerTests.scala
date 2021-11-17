@@ -16,7 +16,8 @@ object AmmRunnerTests extends TestSuite {
       scalaVer: String,
       ammVer: String,
       fork: Boolean = false,
-      extraArgs: Seq[String] = Nil
+      extraArgs: Seq[String] = Nil,
+      runtimeScalaVerOpt: Option[String] = None
     ): Unit = {
       val code = """println(s"Scala ${scala.util.Properties.versionNumberString} Ammonite ${ammonite.Constants.version}")"""
       val codeArg =
@@ -24,7 +25,10 @@ object AmmRunnerTests extends TestSuite {
         else code
       val forkArg = if (fork) Seq("--fork") else Nil
       val output = TestUtil.outputOf(Seq(launcherPath, "--amm", ammVer, "--scala", scalaVer) ++ forkArg ++ Seq("-c", codeArg) ++ extraArgs).trim
-      val expectedOutput = s"Scala $scalaVer Ammonite $ammVer"
+      // If we are using Scala 3, this is actually spitting out 2.13 due to the
+      // way it's published with 2.13/3 interop
+      val outputScalaVer = runtimeScalaVerOpt.getOrElse(scalaVer)
+      val expectedOutput = s"Scala $outputScalaVer Ammonite $ammVer"
       assert(output == expectedOutput)
     }
 
@@ -68,6 +72,18 @@ object AmmRunnerTests extends TestSuite {
       }
     }
 
+    test("scala3") {
+      test("amm 2.4.1") {
+        test("scala 3.0.1") - runTest("3.0.1", "2.4.1", fork = true, runtimeScalaVerOpt = Some("2.13.6"))
+      }
+      test("amm 2.4.1 thin") {
+        test("scala 3.0.1") - runTest("3.0.1", "2.4.1", fork = true, extraArgs = Seq("--thin"), runtimeScalaVerOpt = Some("2.13.6"))
+      }
+
+      test("amm 2.5.4-11-4f5bf2aa") {
+        test("scala 3.1.3") - runTest("3.1.3", "2.5.4-11-4f5bf2aa", fork = true, runtimeScalaVerOpt = Some("2.13.8"))
+      }
+    }
   }
 
 }
