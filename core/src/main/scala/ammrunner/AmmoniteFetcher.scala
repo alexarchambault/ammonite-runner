@@ -105,7 +105,8 @@ import scala.io.{BufferedSource, Codec}
     def apiDeps =
       Seq(ammoniteDep(if (interpOnly) "interp-api" else "repl-api")) ++ compilerDeps
 
-    val mainClass = "ammonite.Main" // Get from META-INF/MANIFEST… if it's there?
+    val mainClass = if (AmmoniteFetcher.compareVersions(versions.ammoniteVersion, "2.5.0") < 0)
+      "ammonite.Main" else "ammonite.AmmoniteMain" // Get from META-INF/MANIFEST… if it's there?
 
     if (fetchCacheIKnowWhatImDoing.nonEmpty || !thin) {
       val fetcher = createFetcher()
