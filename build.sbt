@@ -74,13 +74,13 @@ lazy val cli = project
       Deps.utest.value % Test
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
-    fork.in(Test) := true,
-    javaOptions.in(Test) += {
+    (Test / fork) := true,
+    (Test / javaOptions) += {
       val isWindows = System.getProperty("os.name")
         .toLowerCase(java.util.Locale.ROOT)
         .contains("windows")
       val ext = if (isWindows) ".bat" else ""
-      val launcher = pack.in(Compile)
+      val launcher = (Compile / pack)
         .value
         .getAbsoluteFile
         ./("bin/amm-runner" + ext)
@@ -91,7 +91,7 @@ lazy val cli = project
   )
 
 shared
-skip.in(publish) := true
+(publish / skip) := true
 disablePlugins(MimaPlugin)
 scalaVersion := scala213
 crossScalaVersions := Nil
