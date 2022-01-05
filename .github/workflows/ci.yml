@@ -33,15 +33,21 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.JDK}}
-
     - run: sbt +test
+
+  binary-check:
+    runs-on: "ubuntu-latest"
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        submodules: true
 
     - uses: coursier/cache-action@v6
     - uses: actions/setup-java@v2
       with:
         distribution: 'temurin'
         java-version: 17
-
     - run: sbt +mimaReportBinaryIssues
 
   # job whose name doesn't change when we bump Scala versions, add OSes, …
