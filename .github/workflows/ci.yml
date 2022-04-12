@@ -29,7 +29,7 @@ jobs:
         submodules: true
 
     - uses: coursier/cache-action@v6
-    - uses: actions/setup-java@v2
+    - uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.JDK}}
@@ -44,7 +44,7 @@ jobs:
         submodules: true
 
     - uses: coursier/cache-action@v6
-    - uses: actions/setup-java@v2
+    - uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: 17
@@ -68,7 +68,7 @@ jobs:
         fetch-depth: 0
         submodules: true
     - uses: coursier/cache-action@v6
-    - uses: actions/setup-java@v2
+    - uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: 17
