@@ -7,7 +7,7 @@ object AmmoniteFetcherTests extends TestSuite {
 
   val tests = Tests {
 
-    "thin" - {
+    test("thin") {
       val tmpDir = Files.createTempDirectory("amm-runner-tests")
       val maybeCommand = AmmoniteFetcher(Versions("2.0.4", "2.12.10"))
         .withThin(true)
@@ -22,7 +22,7 @@ object AmmoniteFetcherTests extends TestSuite {
       Predef.assert(outsideTmpDir.isEmpty, s"Found Ammonite class path files outside $tmpDir: $outsideTmpDir")
     }
 
-    "non-thin" - {
+    test("non-thin") {
       val maybeCommand = AmmoniteFetcher(Versions("2.0.4", "2.12.10"))
         .withThin(false)
         .command()
@@ -36,8 +36,8 @@ object AmmoniteFetcherTests extends TestSuite {
       Predef.assert(outsideCache.isEmpty, s"Found Ammonite class path files outside $cacheBase: $outsideCache")
     }
 
-    "scala3" - {
-      "former convention" - {
+    test("scala3") {
+      test("former convention") {
         val maybeCommand = AmmoniteFetcher(Versions("2.4.1", "3.0.2"))
           .withThin(false)
           .command()
@@ -50,7 +50,7 @@ object AmmoniteFetcherTests extends TestSuite {
         assert(inCache.nonEmpty)
         Predef.assert(outsideCache.isEmpty, s"Found Ammonite class path files outside $cacheBase: $outsideCache")
       }
-      "new convention" - {
+      test("new convention") {
         val maybeCommand = AmmoniteFetcher(Versions("2.5.4-11-4f5bf2aa", "3.1.3"))
           .withThin(false)
           .command()

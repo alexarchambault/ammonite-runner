@@ -20,7 +20,7 @@ import scala.io.{BufferedSource, Codec}
   deleteTmpFile: Boolean = true,
   fetchSources: Boolean = true,
   progressBars: Boolean = true,
-  transformFetch: Option[coursierapi.Fetch => coursierapi.Fetch] = None,
+  transformFetch: Option[Fetch => Fetch] = None,
   @since
   thin: Boolean = true
 ) {
