@@ -4,7 +4,7 @@ import java.io.{File, InputStream, OutputStream}
 import java.nio.charset.{Charset, StandardCharsets}
 import java.nio.file.{Files, FileSystemException, Path}
 
-import coursierapi.{Cache, Dependency, Fetch, Logger, ResolutionParams}
+import coursierapi.{Cache, Dependency, Fetch, Logger, ResolutionParams, Version}
 import coursier.launcher.{BootstrapGenerator, ClassLoaderContent, ClassPathEntry}
 import dataclass._
 
@@ -85,7 +85,7 @@ import scala.io.{BufferedSource, Codec}
     }
 
     val compilerDeps =
-      if (AmmoniteFetcher.compareVersions(versions.ammoniteVersion, "2.3.8-32-64308dc3") < 0)
+      if (Version.compare(versions.ammoniteVersion, "2.3.8-32-64308dc3") < 0)
         Nil
       else
         Seq(ammoniteDep("compiler"))
@@ -105,7 +105,7 @@ import scala.io.{BufferedSource, Codec}
     def apiDeps =
       Seq(ammoniteDep(if (interpOnly) "interp-api" else "repl-api")) ++ compilerDeps
 
-    val mainClass = if (AmmoniteFetcher.compareVersions(versions.ammoniteVersion, "2.5.0") < 0)
+    val mainClass = if (Version.compare(versions.ammoniteVersion, "2.5.0") < 0)
       "ammonite.Main" else "ammonite.AmmoniteMain" // Get from META-INF/MANIFEST… if it's there?
 
     if (fetchCacheIKnowWhatImDoing.nonEmpty || !thin) {
@@ -178,25 +178,4 @@ import scala.io.{BufferedSource, Codec}
     }
   }
 
-}
-
-object AmmoniteFetcher {
-  private val splitter = "[-.]".r
-  // should only work fine for versions whose 4 first "elements" are made of integers,
-  // such as '2.3.8-32-…' or '2.0.4', but not '2.2-M1' or '3.0.0-RC4'.
-  private def compareVersions(a: String, b: String): Int = {
-    def toInt(s: String): Int =
-      if (s.nonEmpty && s.forall(_.isDigit)) s.toInt
-      else Int.MaxValue
-    def itemize(v: String): (Int, Int, Int, Int) =
-      splitter.split(v) match {
-        case Array(a, b, c, d, _*) => (toInt(a), toInt(b), toInt(c), toInt(d))
-        case Array(a, b, c) => (toInt(a), toInt(b), toInt(c), 0)
-        case Array(a, b) => (toInt(a), toInt(b), 0, 0)
-        case Array(a) => (toInt(a), 0, 0, 0)
-        case Array() => (0, 0, 0, 0)
-      }
-    Ordering[(Int, Int, Int, Int)]
-      .compare(itemize(a), itemize(b))
-  }
 }
