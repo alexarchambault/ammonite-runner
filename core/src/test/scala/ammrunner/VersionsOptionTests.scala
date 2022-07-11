@@ -6,7 +6,7 @@ object VersionsOptionTests extends TestSuite {
 
   val tests = Tests {
 
-    "both versions" - {
+    test("both versions") {
       val content =
         """#!/usr/bin/env amm
           |// scala 2.14.3, ammonite 4.1.2
@@ -19,8 +19,8 @@ object VersionsOptionTests extends TestSuite {
       assert(result == expected)
     }
 
-    "both versions, case insensitive" - {
-      * - {
+    test("both versions, case insensitive") {
+      test {
         val content =
           """#!/usr/bin/env amm
             |// Scala 2.14.3, ammonite 4.1.2
@@ -32,7 +32,7 @@ object VersionsOptionTests extends TestSuite {
 
         assert(result == expected)
       }
-      * - {
+      test {
         val content =
           """#!/usr/bin/env amm
             |// scala 2.14.3-RC2, Ammonite 4.1.2
@@ -44,7 +44,7 @@ object VersionsOptionTests extends TestSuite {
 
         assert(result == expected)
       }
-      * - {
+      test {
         val content =
           """#!/usr/bin/env amm
             |// SCALA 2.14.3, AmmonIte 4.1.2-M1
@@ -58,7 +58,7 @@ object VersionsOptionTests extends TestSuite {
       }
     }
 
-    "only scala" - {
+    test("only scala") {
       val content =
         """#!/usr/bin/env amm
           |// scala 2.14.3
@@ -71,7 +71,7 @@ object VersionsOptionTests extends TestSuite {
       assert(result == expected)
     }
 
-    "only Ammonite" - {
+    test("only Ammonite") {
       val content =
         """#!/usr/bin/env amm
           |// ammonite 4.4.3
@@ -84,7 +84,7 @@ object VersionsOptionTests extends TestSuite {
       assert(result == expected)
     }
 
-    "no versions" - {
+    test("no versions") {
       val content =
         """#!/usr/bin/env amm
           |val n = 2
