@@ -81,8 +81,8 @@ object Command {
 
 
   private object Graalvm {
-    import com.oracle.svm.core.headers.Errno
-    import com.oracle.svm.core.posix.headers.Unistd
+    import com.oracle.svm.core.headers.LibC
+    import com.oracle.svm.core.posix.headers.{Errno, Unistd}
     import org.graalvm.nativeimage.c.`type`.CTypeConversion
 
     def execv(argc: String, argv: Seq[String]): Unit = {
@@ -94,7 +94,7 @@ object Command {
       val argv0 = CTypeConversion.toCStrings(argv.toArray)
 
       Unistd.execv(argc0.get(), argv0.get())
-      val err = Errno.errno()
+      val err = LibC.errno()
       val desc = CTypeConversion.toJavaString(Errno.strerror(err))
       throw new Exception(s"Error running $argc ${argv.mkString(" ")}: $desc")
     }
