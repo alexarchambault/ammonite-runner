@@ -10,7 +10,8 @@ inThisBuild(List(
       "",
       url("https://github.com/alexarchambault")
     )
-  )
+  ),
+  sonatypeCredentialHost := "s01.oss.sonatype.org"
 ))
 
 lazy val isAtLeastScala213 = Def.setting {
