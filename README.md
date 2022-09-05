@@ -30,7 +30,7 @@ val command = AmmoniteFetcher(versions)
 
 val proc: Process = command
   .withArgs(Seq(file.getAbsolutePath))
-  .runBg()
+  .run()
 
 val retCode: Int = proc.waitFor()
 ```

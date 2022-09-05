@@ -1,3 +1,4 @@
+import scala.util.Properties
 
 inThisBuild(List(
   organization := "io.github.alexarchambault.ammonite",
@@ -47,7 +48,6 @@ lazy val core = project
       Deps.coursierInterface,
       Deps.coursierLauncher,
       Deps.dataClass % Provided,
-      Deps.svm % Provided,
       Deps.utest.value % Test
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
@@ -66,7 +66,6 @@ lazy val core = project
 
 lazy val cli = project
   .dependsOn(core)
-  // .enablePlugins(GraalVMNativeImagePlugin)
   .enablePlugins(PackPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
@@ -75,15 +74,13 @@ lazy val cli = project
     crossScalaVersions := crossScalaVersions.value.filter(!_.startsWith("2.11.")),
     libraryDependencies ++= Seq(
       Deps.caseApp,
+      Deps.osLib % Test,
       Deps.utest.value % Test
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     Test / fork := true,
     Test / javaOptions += {
-      val isWindows = System.getProperty("os.name")
-        .toLowerCase(java.util.Locale.ROOT)
-        .contains("windows")
-      val ext = if (isWindows) ".bat" else ""
+      val ext = if (Properties.isWin) ".bat" else ""
       val launcher = (Compile / pack)
         .value
         .getAbsoluteFile
