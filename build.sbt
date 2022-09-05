@@ -22,12 +22,11 @@ lazy val isAtLeastScala213 = Def.setting {
 
 val scala213 = "2.13.8"
 val scala212 = "2.12.16"
-val scala211 = "2.11.12"
 
 lazy val shared = Def.settings(
   sonatypeProfileName := "io.github.alexarchambault",
   scalaVersion := scala213,
-  crossScalaVersions := Seq(scala213, scala212, scala211),
+  crossScalaVersions := Seq(scala213, scala212),
   libraryDependencies ++= {
     if (isAtLeastScala213.value) Nil
     else Seq(compilerPlugin(Deps.macroParadise))
@@ -49,7 +48,7 @@ lazy val core = project
       Deps.coursierLauncher,
       Deps.dataClass % Provided,
       Deps.osLib % Test,
-      Deps.utest.value % Test
+      Deps.utest % Test
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     mimaPreviousArtifacts := {
