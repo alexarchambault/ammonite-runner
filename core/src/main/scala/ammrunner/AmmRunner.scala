@@ -3,19 +3,8 @@ package ammrunner.cli
 import java.io.File
 
 import ammrunner.{AmmoniteFetcher, Command, Versions, VersionsOption}
-import caseapp._
-import coursierapi.Module
 
-import scala.collection.JavaConverters._
-
-object AmmRunner extends CaseApp[Options] {
-
-  override def stopAtFirstUnrecognized = true
-
-  def exit(message: String): Nothing = {
-    System.err.println(message)
-    sys.exit(1)
-  }
+object AmmRunner {
 
   def command(
     ammVersion: Option[String],
@@ -49,21 +38,4 @@ object AmmRunner extends CaseApp[Options] {
 
     command.withArgs(args)
   }
-
-  def run(options: Options, args: RemainingArgs): Unit = {
-
-    // that should probably be fixed by case-app
-    val args0 =
-      if (args.remaining.headOption.contains("--"))
-        args.all.drop(1)
-      else
-        args.all
-
-    val proc = command(options.amm, options.scala, args0).withArgs(args0).run()
-    val retCode = proc.waitFor()
-    if (retCode != 0)
-      sys.exit(retCode)
-  }
 }
-
-abstract class AmmRunner

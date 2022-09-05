@@ -48,6 +48,7 @@ lazy val core = project
       Deps.coursierInterface,
       Deps.coursierLauncher,
       Deps.dataClass % Provided,
+      Deps.osLib % Test,
       Deps.utest.value % Test
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
@@ -62,33 +63,6 @@ lazy val core = project
         ProblemFilters.exclude[DirectMissingMethodProblem]("ammrunner.Command#Jvm.fork")
       )
     }
-  )
-
-lazy val cli = project
-  .dependsOn(core)
-  .enablePlugins(PackPlugin)
-  .disablePlugins(MimaPlugin)
-  .settings(
-    name := "ammonite-runner-cli",
-    shared,
-    crossScalaVersions := crossScalaVersions.value.filter(!_.startsWith("2.11.")),
-    libraryDependencies ++= Seq(
-      Deps.caseApp,
-      Deps.osLib % Test,
-      Deps.utest.value % Test
-    ),
-    testFrameworks += new TestFramework("utest.runner.Framework"),
-    Test / fork := true,
-    Test / javaOptions += {
-      val ext = if (Properties.isWin) ".bat" else ""
-      val launcher = (Compile / pack)
-        .value
-        .getAbsoluteFile
-        ./("bin/amm-runner" + ext)
-        .toString
-      s"-Dammrunner.launcher=$launcher"
-    },
-    // graalVMNativeImageOptions += "--no-server"
   )
 
 shared

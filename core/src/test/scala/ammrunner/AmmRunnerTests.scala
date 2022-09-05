@@ -1,5 +1,6 @@
-package ammrunner.cli
+package ammrunner
 
+import ammrunner.cli.AmmRunner
 import utest._
 
 import scala.util.Properties
