@@ -51,6 +51,9 @@ lazy val core = project
       Deps.utest.value % Test
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
+    mimaPreviousArtifacts := {
+      mimaPreviousArtifacts.value.filter(!_.revision.startsWith("0.3."))
+    },
     mimaBinaryIssueFilters ++= {
       import com.typesafe.tools.mima.core._
       Seq(
