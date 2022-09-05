@@ -1,5 +1,6 @@
 package ammrunner
 
+import ammrunner.error.NoMatchingScalaAmmoniteVersionsFound
 import coursierapi.Module
 import dataclass.data
 

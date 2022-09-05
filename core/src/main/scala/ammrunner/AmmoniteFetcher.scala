@@ -4,12 +4,14 @@ import java.io.{File, InputStream, OutputStream}
 import java.nio.charset.{Charset, StandardCharsets}
 import java.nio.file.{Files, FileSystemException, Path}
 
+import ammrunner.error.{AmmoniteFetcherException, CoursierError}
 import coursierapi.{Cache, Dependency, Fetch, Logger, ResolutionParams, Version}
 import coursier.launcher.{BootstrapGenerator, ClassLoaderContent, ClassPathEntry}
 import dataclass._
 
 import scala.collection.JavaConverters._
 import scala.io.{BufferedSource, Codec}
+import scala.util.Properties
 
 @data class AmmoniteFetcher(
   versions: Versions,
@@ -162,7 +164,7 @@ import scala.io.{BufferedSource, Codec}
               override def run(): Unit =
                 try Files.deleteIfExists(tmpFile)
                 catch {
-                  case e: FileSystemException if Command.isWindows =>
+                  case e: FileSystemException if Properties.isWin =>
                     System.err.println(s"Ignored error while deleting temporary file $tmpFile: $e")
                 }
             }
