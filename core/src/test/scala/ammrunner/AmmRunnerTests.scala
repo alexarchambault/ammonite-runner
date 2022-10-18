@@ -74,7 +74,7 @@ object AmmRunnerTests extends TestSuite {
 
       test("amm 2.5.4-11-4f5bf2aa") {
         test("scala 3.1.3") {
-          runTest("3.1.3", "2.5.4-11-4f5bf2aa", runtimeScalaVerOpt = Some("2.13.10"))
+          runTest("3.1.3", "2.5.4-11-4f5bf2aa", runtimeScalaVerOpt = Some("2.13.8"))
         }
       }
     }
