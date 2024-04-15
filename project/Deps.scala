@@ -11,5 +11,5 @@ object Deps {
   def dataClass = "io.github.alexarchambault" %% "data-class" % "0.2.6"
   def macroParadise = "org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full
   def osLib = "com.lihaoyi" %% "os-lib" % "0.9.0"
-  def utest = "com.lihaoyi" %% "utest" % "0.8.1"
+  def utest = "com.lihaoyi" %% "utest" % "0.8.3"
 }
